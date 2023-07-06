@@ -44,11 +44,26 @@ class RoomService {
     });
   }
 
-  addShips(gameId: number, ships: ShipMessage[], indexPlayer: number) {
-    console.log(gameId, ships, indexPlayer);
+  addShips(gameId: number, ships: ShipMessage[], indexPlayer: number, socket: SocketWithNameAndId) {
+    const game = roomManager.getGame(gameId);
+    if (!game) return;
+    if (indexPlayer === 0) {
+      game.ships1 = game.mapFromMessageToShip(ships);
+    } else {
+      game.ships2 = game.mapFromMessageToShip(ships);
+    }
+    if (game.ships1 && game.ships2)
+      socket.send(
+        JSON.stringify({
+          type: 'start_game',
+          data: JSON.stringify({
+            ships,
+            currentPlayerIndex: indexPlayer,
+          }),
+          id: 0,
+        }),
+      );
   }
-
-
 }
 
 export default new RoomService();

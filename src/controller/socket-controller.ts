@@ -50,7 +50,7 @@ export default class SocketController {
         }
         case SocketMessages.ADD_SHIPS: {
           const { gameId, ships, indexPlayer } = JSON.parse(message.data) as GameResponse;
-          roomService.addShips(gameId, ships, indexPlayer);
+          roomService.addShips(gameId, ships, indexPlayer, this.socket);
           break;
         }
         case SocketMessages.ATTACK:

@@ -26,5 +26,11 @@ class RoomManager {
     return this.rooms.get(id);
   }
 
+  getGame(gameId: number) {
+    for (const room of this.rooms.values()) {
+      if (room.game?.id === gameId) return room.game;
+    }
+  }
+
 }
 export default new RoomManager();
