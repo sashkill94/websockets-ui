@@ -3,3 +3,8 @@ export interface SocketResponse {
   data: any;
   id: number;
 }
+
+export interface UserData {
+  name: string;
+  password: string;
+}
