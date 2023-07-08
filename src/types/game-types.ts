@@ -20,10 +20,3 @@ export type Ship = {
 };
 
 export type Point = { x: number; y: number };
-
-export interface AtackMessage {
-  x: number;
-  y: number;
-  gameId: number;
-  indexPlayer: number;
-}

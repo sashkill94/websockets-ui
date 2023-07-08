@@ -70,6 +70,17 @@ class RoomService {
     }
   }
 
+  randomAtack(gameId: number, indexPlayer: number) {
+    const game = roomManager.getGame(gameId);
+    let point = this.getRandomPoint();
+    console.log(point);
+    while (!game?.checkRandomPoint(point)) {
+      console.log(point);
+      point = this.getRandomPoint();
+    }
+    this.attack(point.x, point.y, gameId, indexPlayer);
+  }
+
   attack(x: number, y: number, gameId: number, indexPlayer: number) {
     const game = roomManager.getGame(gameId);
     if (game?.currentPlayer !== indexPlayer) return;
@@ -79,7 +90,12 @@ class RoomService {
     if (result.killedShip && result.result === 'killed') {
       this.sendMissMessagesAfterKill(game, result.killedShip, indexPlayer);
     }
-    this.sendChangeTurn(game, result.result === 'miss');
+    if (game.isFinished) {
+      this.sendFinishGame(game, game.currentPlayer);
+      roomManager.removeRoom(gameId);
+      this.updateRooms();
+    }
+    else this.sendChangeTurn(game, result.result === 'miss');
   }
 
   sendMissMessagesAfterKill(game: Game, ship: Ship, indexPlayer: number) {
@@ -122,6 +138,27 @@ class RoomService {
         }),
       );
     });
+  }
+
+  sendFinishGame(game: Game, winPlayer: 0 | 1) {
+    [game.user1, game.user2].forEach(socket => {
+      socket.send(
+        JSON.stringify({
+          type: "finish",
+          data: JSON.stringify(
+              {
+                  winPlayer,
+              }),
+          id: 0,
+      }),
+      )
+    });
+  }
+
+  getRandomPoint() {
+    const x = Math.ceil(Math.random() * 10) - 1;
+    const y = Math.ceil(Math.random() * 10) - 1;
+    return { x, y };
   }
 }
 

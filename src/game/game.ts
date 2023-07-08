@@ -12,6 +12,7 @@ export class Game {
   shots1: Point[] = [];
   shots2: Point[] = [];
   currentPlayer: 0 | 1 = (Math.ceil(Math.random() * 2) - 1) as 0 | 1;
+  isFinished = false;
 
   constructor(user1: SocketWithNameAndId, user2: SocketWithNameAndId) {
     this.id = Game.id++;
@@ -52,6 +53,7 @@ export class Game {
         killedShip = ship;
       }
     });
+    this.isFinished = ships.every(el => el.isKilled);
     return {result, killedShip};
   }
 
@@ -103,5 +105,10 @@ export class Game {
     const retry = shots.some((el) => el.x === point.x && el.y === point.y);
     if (retry) return false;
     return !!shots.push(point);    
+  }
+
+  checkRandomPoint(point: Point) {
+    const shots = this.currentPlayer === 0 ? this.shots1 : this.shots2;
+    return !shots.some((el) => el.x === point.x && el.y === point.y); 
   }
 }

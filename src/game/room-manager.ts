@@ -32,5 +32,13 @@ class RoomManager {
     }
   }
 
+  removeRoom(gameId: number) {
+    let key;
+    for (const entry of this.rooms.entries()) {
+      if (entry[1].game?.id === gameId) key = entry[0];
+    }
+    if (key) this.rooms.delete(key);
+  }
+
 }
 export default new RoomManager();
