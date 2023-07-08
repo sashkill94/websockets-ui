@@ -11,4 +11,5 @@ export enum SocketMessages {
   UPDATE_WINNERS = 'update_winners',
   ADD_USER= 'add_user_to_room',
   ADD_SHIPS= 'add_ships',
+  SINGLE_PLAY= 'single_play',
 }

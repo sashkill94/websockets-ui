@@ -9,6 +9,7 @@ class RoomService {
   createRoom(creator: SocketWithNameAndId) {
     roomManager.createRoom(creator);
     this.updateRooms();
+    this.updateWinners();
   }
 
   updateRooms() {
@@ -93,9 +94,12 @@ class RoomService {
     if (game.isFinished) {
       this.sendFinishGame(game, game.currentPlayer);
       roomManager.removeRoom(gameId);
+      const player = game.currentPlayer === 0 ? game.user1 : game.user2;
+      storage.addWin(player.name || 'annonymus');
       this.updateRooms();
-    }
-    else this.sendChangeTurn(game, result.result === 'miss');
+      this.updateWinners();
+    } else this.sendChangeTurn(game, result.result === 'miss');
+    
   }
 
   sendMissMessagesAfterKill(game: Game, ship: Ship, indexPlayer: number) {
@@ -144,15 +148,28 @@ class RoomService {
     [game.user1, game.user2].forEach(socket => {
       socket.send(
         JSON.stringify({
-          type: "finish",
-          data: JSON.stringify(
-              {
-                  winPlayer,
-              }),
+          type: 'finish',
+          data: JSON.stringify({
+            winPlayer,
+          }),
           id: 0,
-      }),
-      )
+        }),
+      );
     });
+  }
+
+  updateWinners() {
+    storage.users
+      .filter(user => !user.inGame)
+      .forEach(user => {
+        user.socket.send(
+          JSON.stringify({
+            type: 'update_winners',
+            data: JSON.stringify(storage.winners),
+            id: 0,
+          }),
+        );
+      });
   }
 
   getRandomPoint() {
