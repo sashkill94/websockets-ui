@@ -3,7 +3,7 @@ import userService from '../services/user-service.js';
 import { SocketMessages } from '../types/socket-messages.js';
 import { SocketResponse, UserData } from '../types/socket-message.js';
 import roomService from '../services/room-service.js';
-import { GameResponse } from '../types/game-types.js';
+import { AtackMessage, GameResponse } from '../types/game-types.js';
 
 export type SocketWithNameAndId = WebSocket & {name?: string, id?: number}
 
@@ -53,9 +53,11 @@ export default class SocketController {
           roomService.addShips(gameId, ships, indexPlayer, this.socket);
           break;
         }
-        case SocketMessages.ATTACK:
-          //Инструкции, соответствующие value2
+        case SocketMessages.ATTACK: {
+          const { x, y, gameId, indexPlayer } = JSON.parse(message.data) as AtackMessage;
+          roomService.attack(x, y, gameId, indexPlayer);
           break;
+        }
         case SocketMessages.CREATE_GAME:
           //Инструкции, соответствующие value2
           break;

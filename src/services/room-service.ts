@@ -1,7 +1,8 @@
 import { SocketWithNameAndId } from '../controller/socket-controller.js';
+import { Game } from '../game/game.js';
 import roomManager from '../game/room-manager.js';
 import storage from '../storage/storage.js';
-import { ShipMessage } from '../types/game-types.js';
+import { Ship, ShipMessage } from '../types/game-types.js';
 import { SocketMessages } from '../types/socket-messages.js';
 
 class RoomService {
@@ -52,17 +53,75 @@ class RoomService {
     } else {
       game.ships2 = game.mapFromMessageToShip(ships);
     }
-    if (game.ships1 && game.ships2)
-      socket.send(
+    if (game.ships1 && game.ships2) {
+      [game.user1, game.user2].forEach(el =>
+        el.send(
+          JSON.stringify({
+            type: 'start_game',
+            data: JSON.stringify({
+              ships: el === game.user1 ? game.ships1 : game.ships2,
+              currentPlayerIndex: game.currentPlayer,
+            }),
+            id: 0,
+          }),
+        ),
+      );
+      this.sendChangeTurn(game, false);
+    }
+  }
+
+  attack(x: number, y: number, gameId: number, indexPlayer: number) {
+    const game = roomManager.getGame(gameId);
+    if (game?.currentPlayer !== indexPlayer) return;
+    const result: { result: string; killedShip: Ship | null } | undefined = game.attack(x, y);
+    if (!result) return;
+    this.sendAttackResponse(game, x, y, indexPlayer, result.result);
+    if (result.killedShip && result.result === 'killed') {
+      this.sendMissMessagesAfterKill(game, result.killedShip, indexPlayer);
+    }
+    this.sendChangeTurn(game, result.result === 'miss');
+  }
+
+  sendMissMessagesAfterKill(game: Game, ship: Ship, indexPlayer: number) {
+    const arroundPoints = game.getShipArroundPoints(ship);
+    arroundPoints.forEach(point => {
+      const result = game.addPointToCurrentsShots(point);
+      if (result) this.sendAttackResponse(game, point.x, point.y, indexPlayer, 'miss');
+    });
+  }
+
+  sendAttackResponse(game: Game, x: number, y: number, indexPlayer: number, status: string) {
+    [game.user1, game.user2].forEach(soket => {
+      soket.send(
         JSON.stringify({
-          type: 'start_game',
+          type: 'attack',
           data: JSON.stringify({
-            ships,
-            currentPlayerIndex: indexPlayer,
+            position: {
+              x,
+              y,
+            },
+            currentPlayer: indexPlayer /* id of the player in the current game */,
+            status,
           }),
           id: 0,
         }),
       );
+    });
+  }
+
+  sendChangeTurn(game: Game, turn: boolean) {
+    if (turn) game.switchCurrentPLayer();
+    [game.user1, game.user2].forEach(socket => {
+      socket.send(
+        JSON.stringify({
+          type: 'turn',
+          data: JSON.stringify({
+            currentPlayer: game.currentPlayer,
+          }),
+          id: 0,
+        }),
+      );
+    });
   }
 }
 

@@ -11,7 +11,19 @@ export interface ShipMessage {
   };
   direction: boolean;
   length: number;
-  type: "small" | "medium" | "large" | "huge";
+  type: 'small' | 'medium' | 'large' | 'huge';
 }
 
-export type Ship = {x: number; y: number; }[];
+export type Ship = {
+  isKilled: boolean;
+  points: { x: number; y: number; status: boolean }[];
+};
+
+export type Point = { x: number; y: number };
+
+export interface AtackMessage {
+  x: number;
+  y: number;
+  gameId: number;
+  indexPlayer: number;
+}
