@@ -16,6 +16,16 @@ class Storage {
     this.winners.set(name, wins);
   }
 
+  getWinners() {
+    const winners = [];
+    for (const entry of this.winners.entries())
+      winners.push({
+        name: entry[0],
+        wins: entry[1]
+      })
+    return winners;
+  }
+
 }
 
 export default new Storage();

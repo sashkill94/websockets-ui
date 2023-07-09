@@ -11,13 +11,14 @@ export class Game {
   ships2!: Ship[];
   shots1: Point[] = [];
   shots2: Point[] = [];
-  currentPlayer: 0 | 1 = (Math.ceil(Math.random() * 2) - 1) as 0 | 1;
+  currentPlayer: 0 | 1;
   isFinished = false;
 
   constructor(user1: SocketWithNameAndId, user2: SocketWithNameAndId) {
     this.id = Game.id++;
     this.user1 = user1;
     this.user2 = user2;
+    this.currentPlayer = (Math.ceil(Math.random() * 2) - 1) as 0 | 1;
   }
 
   attack(x: number, y: number) {

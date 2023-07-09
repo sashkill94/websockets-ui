@@ -37,6 +37,7 @@ export default class SocketController {
           const { name, password } = JSON.parse(message.data) as UserData;
           userService.createUser(name, password, this.socket);
           roomService.updateRooms();
+          roomService.updateWinners();
           break;
         }
         case SocketMessages.CREATE_ROOM: {
@@ -59,6 +60,11 @@ export default class SocketController {
           break;
         }
         case SocketMessages.ATTACK: {
+          const { x, y, gameId, indexPlayer } = JSON.parse(message.data) as AtackMessage;
+          roomService.attack(x, y, gameId, indexPlayer);
+          break;
+        }
+        case SocketMessages.SINGLE_PLAY: {
           const { x, y, gameId, indexPlayer } = JSON.parse(message.data) as AtackMessage;
           roomService.attack(x, y, gameId, indexPlayer);
           break;

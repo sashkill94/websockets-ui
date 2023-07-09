@@ -165,7 +165,7 @@ class RoomService {
         user.socket.send(
           JSON.stringify({
             type: 'update_winners',
-            data: JSON.stringify(storage.winners),
+            data: JSON.stringify(storage.getWinners()),
             id: 0,
           }),
         );
