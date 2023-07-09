@@ -19,6 +19,7 @@ export default class SocketController {
 
   init() {
     this.socket.on('message', this.handleMessage.bind(this));
+    this.socket.on('close', this.closeMessage.bind(this))
     // this.socket.on(SocketEvents.RoomConnect, this.connectRoom.bind(this));
     // this.socket.on(SocketEvents.AutoConnect, this.autoConnect.bind(this));
     // this.socket.on(SocketEvents.CreateScene, this.sceneCreated.bind(this));
@@ -51,7 +52,7 @@ export default class SocketController {
         }
         case SocketMessages.ADD_SHIPS: {
           const { gameId, ships, indexPlayer } = JSON.parse(message.data) as GameResponse;
-          roomService.addShips(gameId, ships, indexPlayer, this.socket);
+          roomService.addShips(gameId, ships, indexPlayer);
           break;
         }
         case SocketMessages.RANDOM_ATTACK: {
@@ -65,8 +66,7 @@ export default class SocketController {
           break;
         }
         case SocketMessages.SINGLE_PLAY: {
-          const { x, y, gameId, indexPlayer } = JSON.parse(message.data) as AtackMessage;
-          roomService.attack(x, y, gameId, indexPlayer);
+          roomService.startSoloGame(this.socket);
           break;
         }
         default:
@@ -75,5 +75,9 @@ export default class SocketController {
     } catch (e) {
       console.log((e as Error).message);
     }
+  }
+
+  closeMessage() {
+    roomService.handleDisconnect(this.socket);
   }
 }

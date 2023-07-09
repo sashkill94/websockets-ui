@@ -6,6 +6,7 @@ export class Room {
   player1: SocketWithNameAndId;
   player2: SocketWithNameAndId | undefined;
   game: Game | undefined;
+  isSolo = false;
 
   constructor(player1: SocketWithNameAndId){
     this.player1 = player1
@@ -13,6 +14,11 @@ export class Room {
 
   startGame() {
     this.game = new Game(this.player1, this.player2!);
+    return this.game;
+  }
+
+  startSoloGame() {
+    this.game = new Game(this.player1);
     return this.game;
   }
 

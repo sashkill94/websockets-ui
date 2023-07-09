@@ -6,18 +6,20 @@ export class Game {
   private static id = 1;
   id: number;
   user1: SocketWithNameAndId;
-  user2: SocketWithNameAndId;
+  user2: SocketWithNameAndId | undefined;
   ships1!: Ship[];
   ships2!: Ship[];
   shots1: Point[] = [];
   shots2: Point[] = [];
   currentPlayer: 0 | 1;
   isFinished = false;
+  withBot = false;
 
-  constructor(user1: SocketWithNameAndId, user2: SocketWithNameAndId) {
+  constructor(user1: SocketWithNameAndId, user2?: SocketWithNameAndId) {
     this.id = Game.id++;
     this.user1 = user1;
-    this.user2 = user2;
+    if (user2) this.user2 = user2;
+    else this.withBot = true;
     this.currentPlayer = (Math.ceil(Math.random() * 2) - 1) as 0 | 1;
   }
 
@@ -111,5 +113,76 @@ export class Game {
   checkRandomPoint(point: Point) {
     const shots = this.currentPlayer === 0 ? this.shots1 : this.shots2;
     return !shots.some((el) => el.x === point.x && el.y === point.y); 
+  }
+
+  finishByDisconnect(disconnetedUser: SocketWithNameAndId) {
+    const winner = disconnetedUser === this.user1 ? 1 : 0;
+    return winner;
+  }
+
+  generateShipsToBot() {
+    const fieldSize = 10;
+    const ships = [
+      { size: 4, count: 1 },
+      { size: 3, count: 2 },
+      { size: 2, count: 3 },
+      { size: 1, count: 4 }
+    ];
+  
+    const map: Ship[] = [];
+  
+    for (const ship of ships) {
+      for (let i = 0; i < ship.count; i++) {
+        let newShip: Ship;
+        let isValidPosition = false;
+  
+        while (!isValidPosition) {
+          const isVertical = Math.random() < 0.5;
+          const startX = Math.floor(Math.random() * fieldSize);
+          const startY = Math.floor(Math.random() * fieldSize);
+  
+          newShip = {
+            isKilled: false,
+            points: []
+          };
+  
+          let isValidShip = true;
+  
+          for (let j = 0; j < ship.size; j++) {
+            const x = isVertical ? startX : startX + j;
+            const y = isVertical ? startY + j : startY;
+  
+            if (x >= fieldSize || y >= fieldSize) {
+              isValidShip = false;
+              break;
+            }
+  
+            for (const existingShip of map) {
+              for (const point of existingShip.points) {
+                if (
+                  Math.abs(point.x - x) <= 1 &&
+                  Math.abs(point.y - y) <= 1
+                ) {
+                  isValidShip = false;
+                  break;
+                }
+              }
+              if (!isValidShip) break;
+            }
+  
+            if (!isValidShip) break;
+  
+            newShip.points.push({ x, y, status: true });
+          }
+  
+          if (isValidShip) {
+            isValidPosition = true;
+            map.push(newShip);
+          }
+        }
+      }
+    }
+  
+    this.ships2 = map;
   }
 }
