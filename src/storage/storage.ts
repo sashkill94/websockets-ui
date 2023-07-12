@@ -26,6 +26,9 @@ class Storage {
     return winners;
   }
 
+  checkUser(name: string) {
+    return this.users.some(el => el.name === name);
+  }
 }
 
 export default new Storage();
